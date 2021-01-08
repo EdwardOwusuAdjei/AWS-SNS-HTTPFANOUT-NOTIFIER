@@ -1,0 +1,14 @@
+{
+  "ServiceConfiguration":{
+    "Workers": 10
+  },
+  "Notification": {
+    "MessageRecipients": [""],
+    "EmailRecipients": [""],
+    "SmsEndpoint": "http://api.xxx.com/v1/XXXXXX/send?to=$to&content=$content&clientid=xxxxx&clientsecret=XXx&from=xxxx"
+  },
+  "Policies" :{
+    "ResiliencePolicy":"Retry",
+    "RetryTimes": 4
+  }
+}
