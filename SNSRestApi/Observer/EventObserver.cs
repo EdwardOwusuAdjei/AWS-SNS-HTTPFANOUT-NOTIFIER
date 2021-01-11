@@ -20,7 +20,7 @@ namespace SNSRestApi.Observer
                 _observers.Add(observer);
             return new Unsubscriber(_observers, observer);
         }
-        // Define Unsubscriber class
+      
         private class Unsubscriber : IDisposable
         {
             private List<IObserver<SNSRequest>> _observers;
