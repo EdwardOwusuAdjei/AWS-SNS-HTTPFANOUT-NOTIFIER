@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -8,7 +9,9 @@ using Microsoft.Extensions.Logging;
 using SNSRestApi.Data.Model;
 using SNSRestApi.Data.Model.Configuration;
 using SNSRestApi.DependencyResolver;
+using SNSRestApi.Observer;
 using SNSRestApi.Service;
+using SNSRestApi.Service.SMSChannel;
 
 namespace SNSRestApi
 {
@@ -28,8 +31,11 @@ namespace SNSRestApi
             var app = WebApplication.Create(args);
             ServiceDependency.Init();
             var receiver = ServiceDependency.InternalServiceProvider.GetService<IReceiver>();
-            await receiver.StartReader();
+            var observable = ServiceDependency.InternalServiceProvider.GetService<IEventObserver>();
+            var subscriber = ServiceDependency.InternalServiceProvider.GetService<ISendMessage>();
+            subscriber.Subscribe(observable);
             
+            await receiver.StartReader();
             app.MapPost("/receiver", async http =>
             {
                 var request = await http.Request.ReadJsonAsync<SNSRequest>();

@@ -1,9 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using SNSRestApi.Data.Model;
+using SNSRestApi.Observer;
 
 namespace SNSRestApi.Service.SMSChannel
 {
-    public interface ISendMessage
+    public interface ISendMessage:IObserver<SNSRequest>
     {
         /// <summary>
         /// Send Text Message
@@ -11,6 +13,6 @@ namespace SNSRestApi.Service.SMSChannel
         /// <param name="message"></param>
         /// <param name="recipient"></param>
         /// <returns></returns>
-        Task<bool> Send(SNSRequest snsRequest);
+        void Subscribe(IObservable<SNSRequest> provider);
     }
 }

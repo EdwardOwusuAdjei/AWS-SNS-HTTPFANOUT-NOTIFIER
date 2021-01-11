@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using SNSRestApi.Data.Model;
 using SNSRestApi.Data.Model.Configuration;
 using SNSRestApi.DependencyResolver;
+using SNSRestApi.Observer;
 using SNSRestApi.Service.SMSChannel;
 
 namespace SNSRestApi.Service
@@ -69,9 +70,8 @@ namespace SNSRestApi.Service
             {
                 while (reader.TryRead(out var payload))
                 {
-                    var sendMessage = ServiceDependency.InternalServiceProvider.GetService<ISendMessage>();
-                    await sendMessage.Send(payload);
-                    Console.WriteLine($" {JsonConvert.SerializeObject(payload)}!");
+                    var observable = ServiceDependency.InternalServiceProvider.GetService<IEventObserver>();
+                    observable.EventMessage(payload);
                     
                 }
             }

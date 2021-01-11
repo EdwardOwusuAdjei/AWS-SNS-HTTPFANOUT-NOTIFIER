@@ -3,7 +3,9 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SNSRestApi.Data.Model;
 using SNSRestApi.Data.Model.Configuration;
+using SNSRestApi.Observer;
 using SNSRestApi.Policy;
 using SNSRestApi.Service;
 using SNSRestApi.Service.SMSChannel;
@@ -31,11 +33,12 @@ namespace SNSRestApi.DependencyResolver
             services.Configure<Notification>(configuration.GetSection("Notification"));
             services.Configure<Policies>(configuration.GetSection("Policies"));
             services.Configure<ServiceConfiguration>(configuration.GetSection("ServiceConfiguration"));
-            
-            
-            services.AddTransient<IReceiver, Receiver>();
-            services.AddHttpClient<ISendMessage, SendMessage>()
-                .AddPolicyHandler(PolicyDefined.GetRetryPolicy());
+
+
+            services.AddSingleton<IReceiver, Receiver>();
+            services.AddSingleton<IEventObserver, EventObserver>();
+            services.AddHttpClient<ISendMessage, SendMessage>();
+            //.AddPolicyHandler(PolicyDefined.GetRetryPolicy());
 
         }
         

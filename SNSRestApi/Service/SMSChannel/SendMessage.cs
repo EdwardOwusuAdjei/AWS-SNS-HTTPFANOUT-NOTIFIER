@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ namespace SNSRestApi.Service.SMSChannel
         private readonly IOptions<Notification> _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<SendMessage> _logger;
+        private IDisposable _unsubscribe;
         public SendMessage(HttpClient httpClient, ILogger<SendMessage> logger)
         {
             var options = ServiceDependency.InternalServiceProvider
@@ -32,13 +34,26 @@ namespace SNSRestApi.Service.SMSChannel
         /// </summary>
         /// <param name="snsRequest"></param>
         /// <returns></returns>
-        public async Task<bool> Send(SNSRequest snsRequest)
+       
+
+        public void OnCompleted()
+        {
+            _logger.LogInformation($"sent messages");
+        }
+
+        public void OnError(Exception error)
+        {
+            _logger.LogInformation($"error occurred messages {error.Message}");
+        }
+
+        public async void OnNext(SNSRequest snsRequest)
         {
             foreach (var number in _options.Value.MessageRecipients)
             {
                 var url = new StringBuilder(_options.Value.SmsEndpoint)
-                    .Replace("$to",$"{number}")
-                    .Replace("$content",$"{snsRequest.Message}");
+                    .Replace("$to",$"{number.Trim()}")
+                    .Replace("$content",$"{snsRequest.Subject.Trim()} - {snsRequest.Message.Trim()}");
+                _logger.LogInformation(url.ToString());
                 var response =
                     await _httpClient.GetAsync(url.ToString());
                 if(response.IsSuccessStatusCode)
@@ -49,9 +64,12 @@ namespace SNSRestApi.Service.SMSChannel
                 }
                     
             }
-            
+        }
 
-            return true;
+        public void Subscribe(IObservable<SNSRequest> provider)
+        {
+            if (provider != null)
+                _unsubscribe = provider.Subscribe(this);
         }
     }
 }
